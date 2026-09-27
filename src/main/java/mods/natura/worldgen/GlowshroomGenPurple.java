@@ -11,8 +11,11 @@ import mods.natura.common.NContent;
 
 public class GlowshroomGenPurple extends WorldGenerator {
 
+    private final boolean plantedGrowth;
+
     public GlowshroomGenPurple(boolean flag) {
         super(flag);
+        this.plantedGrowth = flag;
     }
 
     @Override
@@ -22,7 +25,12 @@ public class GlowshroomGenPurple extends WorldGenerator {
         int height = random.nextInt(4) + 1;
         boolean flag = true;
 
-        if (y >= 1 && y + height + 1 < 256) {
+        boolean vanillaBounds = y >= 1 && y + height + 1 < 256;
+        boolean cubicPlanted = plantedGrowth && CubicTreeBounds.isCubicWorld(world);
+        boolean canGenerate = cubicPlanted
+                ? CubicTreeBounds.isPlantedFootprintAvailable(world, x, y, z, 3, -1, height + 1, vanillaBounds)
+                : vanillaBounds;
+        if (canGenerate) {
             int blockID;
             int posY;
             int range;
@@ -38,7 +46,7 @@ public class GlowshroomGenPurple extends WorldGenerator {
 
                 for (posY = x - b0; posY <= x + b0 && flag; ++posY) {
                     for (range = z - b0; range <= z + b0 && flag; ++range) {
-                        if (blockID >= 0 && blockID < 256) {
+                        if (cubicPlanted || blockID >= 0 && blockID < 256) {
                             Block block = world.getBlock(posY, blockID, range);
 
                             if (posX != 0 && !block.isLeaves(world, posY, blockID, range)) {

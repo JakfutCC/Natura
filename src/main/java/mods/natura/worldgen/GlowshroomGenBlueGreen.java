@@ -12,14 +12,17 @@ import mods.natura.common.NContent;
 public class GlowshroomGenBlueGreen extends WorldGenerator {
 
     int mushroomType = -1;
+    private final boolean plantedGrowth;
 
     public GlowshroomGenBlueGreen(boolean doBlockNotify) {
         super(doBlockNotify);
+        this.plantedGrowth = doBlockNotify;
     }
 
     public GlowshroomGenBlueGreen(boolean doBlockNotify, int mushroomType) {
         super(doBlockNotify);
         this.mushroomType = mushroomType;
+        this.plantedGrowth = doBlockNotify;
     }
 
     @Override
@@ -35,7 +38,12 @@ public class GlowshroomGenBlueGreen extends WorldGenerator {
         int height = random.nextInt(3) + 4;
         boolean flag = true;
 
-        if (y >= 1 && y + height + 1 < 256) {
+        boolean vanillaBounds = y >= 1 && y + height + 1 < 256;
+        boolean cubicPlanted = plantedGrowth && CubicTreeBounds.isCubicWorld(world);
+        boolean canGenerate = cubicPlanted
+                ? CubicTreeBounds.isPlantedFootprintAvailable(world, x, y, z, 3, -1, height + 1, vanillaBounds)
+                : vanillaBounds;
+        if (canGenerate) {
             int blockID;
             int posY;
             int l1;
@@ -51,7 +59,7 @@ public class GlowshroomGenBlueGreen extends WorldGenerator {
 
                 for (posY = x - b0; posY <= x + b0 && flag; ++posY) {
                     for (l1 = z - b0; l1 <= z + b0 && flag; ++l1) {
-                        if (blockID >= 0 && blockID < 256) {
+                        if (cubicPlanted || blockID >= 0 && blockID < 256) {
                             Block block = world.getBlock(posY, blockID, l1);
 
                             if (posX != 0 && !block.isLeaves(world, posY, blockID, l1)

@@ -25,6 +25,11 @@ public class EucalyptusTreeGenShort extends WorldGenerator {
         return generateRandomTree(world, random, x, height, z);
     }
 
+    public boolean generatePlanted(World world, Random random, int x, int y, int z) {
+        if (!CubicTreeBounds.isCubicWorld(world)) return generate(world, random, x, y, z);
+        return generateRandomTree(world, random, x, y, z, true);
+    }
+
     int findGround(World world, int x, int y, int z) {
         int l = 0;
         Block i1 = world.getBlock(x, y - 1, z);
@@ -48,9 +53,18 @@ public class EucalyptusTreeGenShort extends WorldGenerator {
     }
 
     public boolean generateRandomTree(World world, Random random, int posX, int posY, int posZ) {
+        return generateRandomTree(world, random, posX, posY, posZ, false);
+    }
+
+    private boolean generateRandomTree(World world, Random random, int posX, int posY, int posZ, boolean cubicPlanted) {
         int height = random.nextInt(3) + 6; // Height
         boolean flag = true;
-        if (posY < 1 || posY + height + 1 > 256) {
+        boolean vanillaBounds = posY >= 1 && posY + height + 1 <= 256;
+        if (cubicPlanted) {
+            boolean legacyBounds = vanillaBounds && posY < 256 - height - 1;
+            if (!CubicTreeBounds.isPlantedFootprintAvailable(world, posX, posY, posZ, 6, -1, height + 6, legacyBounds))
+                return false;
+        } else if (!vanillaBounds) {
             return false;
         }
         for (int i1 = posY; i1 <= posY + 1 + height; i1++) {
@@ -67,7 +81,7 @@ public class EucalyptusTreeGenShort extends WorldGenerator {
                     if (j2 > posZ + byte0 || !flag) {
                         continue label0;
                     }
-                    if (i1 >= 0 && i1 < 256) {
+                    if (cubicPlanted || i1 >= 0 && i1 < 256) {
                         Block k2 = world.getBlock(l1, i1, j2);
                         if (k2 != Blocks.air && k2 != NContent.floraLeaves) {
                             flag = false;
@@ -86,7 +100,7 @@ public class EucalyptusTreeGenShort extends WorldGenerator {
             return false;
         }
         Block j1 = world.getBlock(posX, posY - 1, posZ);
-        if (j1 != Blocks.grass && j1.getMaterial() != Material.ground || posY >= 256 - height - 1) {
+        if (j1 != Blocks.grass && j1.getMaterial() != Material.ground || !cubicPlanted && posY >= 256 - height - 1) {
             return false;
         }
         if (j1 == Blocks.grass) {

@@ -58,7 +58,14 @@ public class DarkwoodGen extends WorldGenerator {
             yPos = findGround(world, xPos, yPos, zPos);
         }
 
-        if (yPos >= 1 && yPos + treeHeight + 1 <= 256) {
+        boolean vanillaBounds = yPos >= 1 && yPos + treeHeight + 1 <= 256;
+        boolean cubicPlanted = !seekGround && CubicTreeBounds.isCubicWorld(world);
+        boolean canGenerate = cubicPlanted
+                ? CubicTreeBounds
+                        .isPlantedFootprintAvailable(world, xPos, yPos, zPos, 2, -1, treeHeight + 1, vanillaBounds)
+                : vanillaBounds;
+
+        if (canGenerate) {
             int i1;
             byte b0;
             int j1;
@@ -77,7 +84,7 @@ public class DarkwoodGen extends WorldGenerator {
 
                 for (int l1 = xPos - b0; l1 <= xPos + b0 && flag; ++l1) {
                     for (j1 = zPos - b0; j1 <= zPos + b0 && flag; ++j1) {
-                        if (i1 >= 0 && i1 < 256) {
+                        if (cubicPlanted || i1 >= 0 && i1 < 256) {
 
                             Block block = world.getBlock(l1, i1, j1);
 
@@ -107,7 +114,7 @@ public class DarkwoodGen extends WorldGenerator {
                         ForgeDirection.UP,
                         (NSaplingBlock) NContent.floraSapling)) || soil == Blocks.netherrack;
 
-                if (isSoil && yPos < 256 - treeHeight - 1) {
+                if (isSoil && (cubicPlanted || yPos < 256 - treeHeight - 1)) {
                     soil.onPlantGrow(world, xPos, yPos - 1, zPos, xPos, yPos, zPos);
                     b0 = 3;
                     byte b1 = 0;

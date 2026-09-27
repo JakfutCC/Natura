@@ -39,95 +39,105 @@ public class BushTreeGen extends WorldGenerator {
         return height + 1;
     }
 
+    public boolean generatePlanted(World world, Random random, int x, int y, int z) {
+        if (!CubicTreeBounds.isCubicWorld(world)) return generate(world, random, x, y, z);
+        return generate(world, random, x, y, z, true);
+    }
+
     @Override
     public boolean generate(World world, Random random, int x, int y, int z) {
+        return generate(world, random, x, y, z, false);
+    }
+
+    private boolean generate(World world, Random random, int x, int y, int z, boolean cubicPlanted) {
         int var6 = random.nextInt(3) + this.baseHeight;
         boolean var7 = true;
 
-        y = findGround(world, x, y, z);
+        if (!cubicPlanted) y = findGround(world, x, y, z);
 
-        if (y >= 1 && y + var6 + 1 <= 256) {
-            int var8;
-            int var10;
-            int var11;
-            int var12;
-
-            for (var8 = y; var8 <= y + 1 + var6; ++var8) {
-                byte var9 = 2;
-
-                if (var8 == y) {
-                    var9 = 1;
-                }
-
-                if (var8 >= y + 1 + var6 - 2) {
-                    var9 = 2;
-                }
-
-                for (var10 = x - var9; var10 <= x + var9 && var7; ++var10) {
-                    for (var11 = z - var9; var11 <= z + var9 && var7; ++var11) {
-                        if (var8 >= 0 && var8 < 256) {
-                            Block block12 = world.getBlock(var10, var8, var11);
-
-                            if (!this.isReplaceable(world, var10, var8, var11)) {
-                                var7 = true;
-                            }
-                        } else {
-                            var7 = false;
-                        }
-                    }
-                }
-            }
-
-            if (!var7) {
+        if (cubicPlanted) {
+            if (!CubicTreeBounds.isPlantedBoundsAvailable(world, x, y, z, -5, 6, -5, 6, -1, var6 + 1, false))
                 return false;
-            } else {
-                Block b8 = world.getBlock(x, y - 1, z);
+        } else if (y < 1 || y + var6 + 1 > 256) return false;
 
-                if ((b8 == Blocks.grass || b8 == Blocks.dirt) && y < 256 - var6 - 1) {
-                    setBlockAndNotifyAdequately(world, x, y - 1, z, Blocks.dirt, 0);
-                    setBlockAndNotifyAdequately(world, x + 1, y - 1, z, Blocks.dirt, 0);
-                    setBlockAndNotifyAdequately(world, x, y - 1, z + 1, Blocks.dirt, 0);
-                    setBlockAndNotifyAdequately(world, x + 1, y - 1, z + 1, Blocks.dirt, 0);
+        int var8;
+        int var10;
+        int var11;
+        int var12;
 
-                    this.growLogs(world, x, y, z);
+        for (var8 = y; var8 <= y + 1 + var6; ++var8) {
+            byte var9 = 2;
 
-                    this.growLeaves(world, x, z, y + var6, 2, random);
+            if (var8 == y) {
+                var9 = 1;
+            }
 
-                    for (var10 = 0; var10 < var6; ++var10) {
-                        b8 = world.getBlock(x, y + var10, z);
+            if (var8 >= y + 1 + var6 - 2) {
+                var9 = 2;
+            }
 
-                        if (b8 == Blocks.air || b8.isLeaves(world, x, y + var10, z)) {
-                            world.setBlock(x, y + var10, z, NContent.tree, this.woodMetadata, 0);
+            for (var10 = x - var9; var10 <= x + var9 && var7; ++var10) {
+                for (var11 = z - var9; var11 <= z + var9 && var7; ++var11) {
+                    if (cubicPlanted || var8 >= 0 && var8 < 256) {
+                        Block block12 = world.getBlock(var10, var8, var11);
+
+                        if (!this.isReplaceable(world, var10, var8, var11)) {
+                            var7 = true;
                         }
-
-                        if (var10 < var6 - 1) {
-                            b8 = world.getBlock(x + 1, y + var10, z);
-
-                            if (b8 == Blocks.air || b8.isLeaves(world, x + 1, y + var10, z)) {
-                                world.setBlock(x + 1, y + var10, z, NContent.tree, this.woodMetadata, 0);
-                            }
-
-                            b8 = world.getBlock(x + 1, y + var10, z + 1);
-
-                            if (b8 == Blocks.air || b8.isLeaves(world, x + 1, y + var10, z + 1)) {
-                                world.setBlock(x + 1, y + var10, z + 1, NContent.tree, this.woodMetadata, 0);
-                            }
-
-                            b8 = world.getBlock(x, y + var10, z + 1);
-
-                            if (b8 == Blocks.air || b8.isLeaves(world, x, y + var10, z + 1)) {
-                                world.setBlock(x, y + var10, z + 1, NContent.tree, this.woodMetadata, 0);
-                            }
-                        }
+                    } else {
+                        var7 = false;
                     }
-
-                    return true;
-                } else {
-                    return false;
                 }
             }
-        } else {
+        }
+
+        if (!var7) {
             return false;
+        } else {
+            Block b8 = world.getBlock(x, y - 1, z);
+
+            if ((b8 == Blocks.grass || b8 == Blocks.dirt) && (cubicPlanted || y < 256 - var6 - 1)) {
+                setBlockAndNotifyAdequately(world, x, y - 1, z, Blocks.dirt, 0);
+                setBlockAndNotifyAdequately(world, x + 1, y - 1, z, Blocks.dirt, 0);
+                setBlockAndNotifyAdequately(world, x, y - 1, z + 1, Blocks.dirt, 0);
+                setBlockAndNotifyAdequately(world, x + 1, y - 1, z + 1, Blocks.dirt, 0);
+
+                this.growLogs(world, x, y, z);
+
+                this.growLeaves(world, x, z, y + var6, 2, random);
+
+                for (var10 = 0; var10 < var6; ++var10) {
+                    b8 = world.getBlock(x, y + var10, z);
+
+                    if (b8 == Blocks.air || b8.isLeaves(world, x, y + var10, z)) {
+                        world.setBlock(x, y + var10, z, NContent.tree, this.woodMetadata, 0);
+                    }
+
+                    if (var10 < var6 - 1) {
+                        b8 = world.getBlock(x + 1, y + var10, z);
+
+                        if (b8 == Blocks.air || b8.isLeaves(world, x + 1, y + var10, z)) {
+                            world.setBlock(x + 1, y + var10, z, NContent.tree, this.woodMetadata, 0);
+                        }
+
+                        b8 = world.getBlock(x + 1, y + var10, z + 1);
+
+                        if (b8 == Blocks.air || b8.isLeaves(world, x + 1, y + var10, z + 1)) {
+                            world.setBlock(x + 1, y + var10, z + 1, NContent.tree, this.woodMetadata, 0);
+                        }
+
+                        b8 = world.getBlock(x, y + var10, z + 1);
+
+                        if (b8 == Blocks.air || b8.isLeaves(world, x, y + var10, z + 1)) {
+                            world.setBlock(x, y + var10, z + 1, NContent.tree, this.woodMetadata, 0);
+                        }
+                    }
+                }
+
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 

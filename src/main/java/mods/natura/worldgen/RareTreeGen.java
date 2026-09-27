@@ -36,7 +36,11 @@ public class RareTreeGen extends WorldGenerator {
             if (yPos == -1) return false;
         }
 
-        if (yPos >= 1 && yPos + height + 1 <= 256) {
+        boolean vanillaBounds = yPos >= 1 && yPos + height + 1 <= 256;
+        boolean canGenerate = seekHeight ? vanillaBounds
+                : CubicTreeBounds.isPlantedFootprintAvailable(world, xPos, yPos, zPos, 2, -1, height, vanillaBounds);
+
+        if (canGenerate) {
             Block soil = world.getBlock(xPos, yPos - 1, zPos);
             boolean isSoil = (soil
                     .canSustainPlant(world, xPos, yPos - 1, zPos, ForgeDirection.UP, NContent.rareSapling));

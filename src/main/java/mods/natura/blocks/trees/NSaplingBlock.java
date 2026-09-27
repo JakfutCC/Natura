@@ -183,7 +183,11 @@ public class NSaplingBlock extends BlockSapling implements IFlowerPottable {
         } else return;
 
         world.setBlock(x, y, z, Blocks.air);
-        if (!(obj.generate(world, random, x, y, z))) world.setBlock(x, y, z, this, md + 8, 3);
+        boolean generated;
+        if (md == 1) generated = ((EucalyptusTreeGenShort) obj).generatePlanted(world, random, x, y, z);
+        else if (md == 2) generated = ((BushTreeGen) obj).generatePlanted(world, random, x, y, z);
+        else generated = obj.generate(world, random, x, y, z);
+        if (!generated) world.setBlock(x, y, z, this, md + 8, 3);
     }
 
     @Override
